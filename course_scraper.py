@@ -49,12 +49,13 @@ def crawl_page(page, url):
 
     markdown = md(html)
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write(f"---")
-        f.write(f'title: "{title}"')
-        f.write(f'original_url: "{url}"')
-        f.write(f'downloaded_at: "{datetime.now().isoformat()}"')
-        f.write(f"---")
+        f.write(f"---\n")
+        f.write(f'title: "{title}"\n')
+        f.write(f'original_url: "{url}"\n')
+        f.write(f'downloaded_at: "{datetime.now().isoformat()}"\n')
+        f.write(f"---\n\n")
         f.write(markdown)
+
 
     metadata.append({
         "title": title,
