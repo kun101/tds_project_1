@@ -401,7 +401,7 @@ async def generate_answer(question, relevant_results, max_retries=2):
             context = ""
             for result in relevant_results:
                 source_type = "Discourse post" if result["source"] == "discourse" else "Documentation"
-                context += f"\n\n{source_type} (URL: {result['url']}):\n{result['content'][:1500]}"
+                context += f"\n\n{source_type} (URL: {result['url']}):\n{result['content'][:2000]}"
             
             # Prepare improved prompt
             prompt = f"""Answer the following question based ONLY on the provided context. 
