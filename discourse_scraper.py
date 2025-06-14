@@ -45,6 +45,8 @@ def scrape_posts(playwright):
     context = browser.new_context(storage_state=AUTH_STATE_FILE)
     page = context.new_page()
 
+    os.makedirs("downloaded_threads", exist_ok=True)
+
     all_topics = []
     page_num = 0
     while True:
@@ -66,7 +68,7 @@ def scrape_posts(playwright):
 
     print(f"📄 Found {len(all_topics)} total topics across all pages")
 
-    filtered_posts = []
+    post_count = 0
     for topic in all_topics:
         created_at = parse_date(topic["created_at"])
         if DATE_FROM <= created_at <= DATE_TO:
@@ -77,41 +79,14 @@ def scrape_posts(playwright):
             except:
                 topic_data = json.loads(page.content())
 
-            posts = topic_data.get("post_stream", {}).get("posts", [])
-            accepted_answer_id = topic_data.get("accepted_answer", topic_data.get("accepted_answer_post_id"))
+            # Save full topic data
+            topic_file_path = os.path.join("downloaded_threads", f"topic_{topic['id']}.json")
+            with open(topic_file_path, "w", encoding="utf-8") as f:
+                json.dump(topic_data, f, indent=2)
 
-            # Build reply count map
-            reply_counter = {}
-            for post in posts:
-                reply_to = post.get("reply_to_post_number")
-                if reply_to is not None:
-                    reply_counter[reply_to] = reply_counter.get(reply_to, 0) + 1
+            post_count += len(topic_data.get("post_stream", {}).get("posts", []))
 
-            for post in posts:
-                filtered_posts.append({
-                    "topic_id": topic["id"],
-                    "topic_title": topic.get("title"),
-                    "category_id": topic.get("category_id"),
-                    "tags": topic.get("tags", []),
-                    "post_id": post["id"],
-                    "post_number": post["post_number"],
-                    "author": post["username"],
-                    "created_at": post["created_at"],
-                    "updated_at": post.get("updated_at"),
-                    "reply_to_post_number": post.get("reply_to_post_number"),
-                    "is_reply": post.get("reply_to_post_number") is not None,
-                    "reply_count": reply_counter.get(post["post_number"], 0),
-                    "like_count": post.get("like_count", 0),
-                    "is_accepted_answer": post["id"] == accepted_answer_id,
-                    "mentioned_users": [u["username"] for u in post.get("mentioned_users", [])],
-                    "url": f"{BASE_URL}/t/{topic['slug']}/{topic['id']}/{post['post_number']}",
-                    "content": BeautifulSoup(post["cooked"], "html.parser").get_text()
-                })
-
-    with open("discourse_posts.json", "w") as f:
-        json.dump(filtered_posts, f, indent=2)
-
-    print(f"✅ Scraped {len(filtered_posts)} posts between {DATE_FROM.date()} and {DATE_TO.date()}")
+    print(f"✅ Saved {post_count} posts across {len(os.listdir('downloaded_threads'))} topics between {DATE_FROM.date()} and {DATE_TO.date()}")
     browser.close()
 
 def main():
