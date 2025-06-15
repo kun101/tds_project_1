@@ -49,3 +49,7 @@
 
 ### Step 6 : Evaluation
 1. Run `npx -y promptfoo eval --config project-tds-virtual-ta-promptfoo.yaml --no-cache`
+
+### Step 7 : Running the Streamlit UI
+1. Ensure the FastAPI backend is running (`python app.py`).
+2. Run the Streamlit app (`streamlit run streamlit_app.py`).

@@ -10,3 +10,5 @@ tqdm
 markdown
 python-multipart
 setuptools
+streamlit
+requests
